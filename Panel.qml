@@ -1439,6 +1439,7 @@ Panel {
               anchors.bottom: parent.bottom
               anchors.leftMargin: root.hudInset
               anchors.bottomMargin: root.hudInset
+                + (keyboardLegend.visible ? keyboardLegend.height + root.controlGap : 0)
               spacing: root.controlGap
               z: 15
 
@@ -1454,6 +1455,7 @@ Panel {
               anchors.bottom: parent.bottom
               anchors.rightMargin: radarSidebar.width + root.hudInset
               anchors.bottomMargin: root.hudInset
+                + (keyboardLegend.visible ? keyboardLegend.height + root.controlGap : 0)
               width: root.miniGlobeOpen ? Style.space(164) : 0
               height: width
               opacity: root.miniGlobeOpen ? 1 : 0
@@ -1471,12 +1473,8 @@ Panel {
 
             Rectangle {
               id: keyboardLegend
-              readonly property real leftEdge: categoryFilters.x + categoryFilters.width + root.controlGap
-              readonly property real rightEdge: root.miniGlobeOpen
-                ? miniGlobe.x - root.controlGap
-                : parent.width - radarSidebar.width - root.hudInset
-              x: leftEdge
-              width: Math.max(0, rightEdge - leftEdge)
+              x: root.hudInset
+              width: Math.max(0, parent.width - radarSidebar.width - root.hudInset * 2)
               anchors.bottom: parent.bottom
               anchors.bottomMargin: root.hudInset
               height: keyboardLegendText.implicitHeight + Style.space(12)
