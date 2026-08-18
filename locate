@@ -1,0 +1,35 @@
+#!/bin/bash
+set -uo pipefail
+
+cache_dir="${XDG_RUNTIME_DIR:-/tmp}/omarchy-satellite-radar"
+cache_file="$cache_dir/location.json"
+weather_file="$HOME/.local/state/omarchy/settings/weather.json"
+
+if [[ -r $weather_file ]]; then
+  weather_result=$(jq -c '
+    {latitude: (.latitude | tonumber?), longitude: (.longitude | tonumber?), source: (.name // "Omarchy weather")}
+    | select(.latitude != null and .longitude != null)
+    | select(.latitude >= -90 and .latitude <= 90 and .longitude >= -180 and .longitude <= 180)' "$weather_file" 2>/dev/null) || weather_result=""
+  if [[ -n $weather_result ]]; then
+    printf '%s' "$weather_result"
+    exit 0
+  fi
+fi
+
+if [[ -r $cache_file ]] && (( $(date +%s) - $(stat -c %Y "$cache_file") < 21600 )); then
+  cat "$cache_file"
+  exit 0
+fi
+
+result=$(curl -fsS --max-time 8 https://get.geojs.io/v1/ip/geo.json 2>/dev/null | jq -c '
+  {latitude: (.latitude | tonumber), longitude: (.longitude | tonumber), source: "IP estimate"}
+  | select(.latitude >= -90 and .latitude <= 90 and .longitude >= -180 and .longitude <= 180)' 2>/dev/null) || result=""
+
+if [[ -z $result ]]; then
+  jq -cn '{error:"Could not determine an approximate location; configure latitude and longitude in the plugin settings"}'
+  exit 0
+fi
+
+mkdir -p "$cache_dir"
+printf '%s' "$result" > "$cache_file"
+printf '%s' "$result"

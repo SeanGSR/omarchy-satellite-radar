@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "id": "ldng.satellite-radar",
+  "name": "Satellite Radar",
+  "version": "1.0.0",
+  "author": "SeanGSR",
+  "license": "MIT",
+  "description": "Track satellites above your location or across the globe from the Omarchy bar.",
+  "homepage": "https://github.com/SeanGSR/omarchy-satellite-radar",
+  "keywords": [
+    "satellite",
+    "radar",
+    "space",
+    "starlink",
+    "iss",
+    "orbit"
+  ],
+  "kinds": [
+    "bar-widget"
+  ],
+  "activation": "on-demand",
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Satellite Radar",
+    "description": "See satellites currently above your location without leaving Omarchy.",
+    "category": "Info",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "latitude": null,
+      "longitude": null,
+      "minimumElevation": 0,
+      "refreshIntervalSec": 5,
+      "includeStarlink": true,
+      "performanceMode": "Balanced",
+      "mapZoom": 4
+    },
+    "schema": [
+      {
+        "key": "latitude",
+        "type": "number",
+        "label": "Latitude (blank for automatic location)",
+        "min": -90,
+        "max": 90,
+        "defaultValue": null
+      },
+      {
+        "key": "longitude",
+        "type": "number",
+        "label": "Longitude (blank for automatic location)",
+        "min": -180,
+        "max": 180,
+        "defaultValue": null
+      },
+      {
+        "key": "minimumElevation",
+        "type": "integer",
+        "label": "Minimum elevation in degrees",
+        "min": 0,
+        "max": 80,
+        "step": 5,
+        "defaultValue": 0
+      },
+      {
+        "key": "refreshIntervalSec",
+        "type": "integer",
+        "label": "Local position refresh (no API request)",
+        "min": 5,
+        "max": 300,
+        "step": 5,
+        "defaultValue": 5
+      },
+      {
+        "key": "includeStarlink",
+        "type": "boolean",
+        "label": "Include the Starlink constellation",
+        "defaultValue": true
+      },
+      {
+        "key": "performanceMode",
+        "type": "enum",
+        "label": "Satellite display performance",
+        "options": [
+          "Balanced",
+          "High",
+          "Maximum",
+          "Global"
+        ],
+        "defaultValue": "Balanced",
+        "description": "Balanced shows 60 satellites, High 150, Maximum 300. Global removes the local horizon filter and renders every available catalog entry; it is intended for powerful computers."
+      },
+      {
+        "key": "mapZoom",
+        "type": "integer",
+        "label": "Ground-track map zoom",
+        "min": 2,
+        "max": 17,
+        "step": 1,
+        "defaultValue": 4
+      }
+    ]
+  }
+}
