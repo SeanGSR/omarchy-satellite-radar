@@ -1449,6 +1449,38 @@ Panel {
               Behavior on opacity { NumberAnimation { duration: 140 } }
             }
 
+            Rectangle {
+              id: keyboardLegend
+              readonly property real leftEdge: categoryFilters.x + categoryFilters.width + root.controlGap
+              readonly property real rightEdge: root.miniGlobeOpen
+                ? miniGlobe.x - root.controlGap
+                : parent.width - radarSidebar.width - root.hudInset
+              x: leftEdge
+              width: Math.max(0, rightEdge - leftEdge)
+              anchors.bottom: parent.bottom
+              anchors.bottomMargin: root.hudInset
+              height: keyboardLegendText.implicitHeight + Style.space(8)
+              visible: width >= Style.space(220)
+              z: 14
+              radius: Style.cornerRadius
+              color: Qt.rgba(Color.background.r, Color.background.g, Color.background.b, 0.68)
+              border.width: 1
+              border.color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.14)
+
+              Text {
+                id: keyboardLegendText
+                anchors.centerIn: parent
+                width: parent.width - Style.space(10)
+                text: "↑↓ Select  ·  Enter Track  ·  ←→ Pan  ·  +− Zoom  ·  S Search\n"
+                  + "I List  ·  G Globe  ·  P Mode  ·  R Refresh now  ·  C Home  ·  Esc Close"
+                color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.72)
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.caption * 0.78 * root.textScale
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+              }
+            }
+
           }
         }
 
