@@ -23,8 +23,9 @@ omarchy plugin add https://github.com/SeanGSR/omarchy-satellite-radar.git --enab
 ```
 
 The plugin is placed in the right section of the bar by default. It requires
-the standard Omarchy environment plus `node`, `curl`, and `jq`. No npm install
-is needed: the small `satellite.js` runtime is vendored with its MIT license.
+the standard Omarchy environment plus `node`, `curl`, and `jq`. The small
+`satellite.js` runtime is included with its MIT license, so no dependency
+setup step is required.
 
 ## Usage
 
