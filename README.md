@@ -1,21 +1,18 @@
 # Satellite Radar for Omarchy
 
-A live satellite ground-track map and orbital overview for the Omarchy bar.
-It tracks Starlink, navigation satellites, space stations, and other visual
-satellites without opening an external website.
+Track satellites from the Omarchy bar on a live OpenStreetMap view and mini
+globe.
 
 ![Satellite Radar preview](preview.png)
 
 ## Features
 
-- Live satellite positions calculated locally from current TLE orbital elements
-- Theme-aware CARTO/OpenStreetMap ground-track map
-- Searchable locations shared with the Omarchy Weather location
-- Satellite selection, tracking, trajectory indicators, filters, and tooltips
-- Draggable mini globe with altitude visualization and independent zoom
-- Balanced (60), High (150), Maximum (300), and opt-in Global catalog modes
-- Two-hour TLE cache and request backoff that respect the upstream data service
-- Full keyboard navigation
+- Starlink, navigation satellites, space stations, and visual satellites
+- Live ground tracks, trajectories, filters, search, and satellite tracking
+- Shared location with Omarchy Weather
+- Draggable and zoomable map and mini globe
+- Balanced (60), High (150), Maximum (300), and Global modes
+- Mouse and keyboard controls
 
 ## Install
 
@@ -23,81 +20,51 @@ satellites without opening an external website.
 omarchy plugin add https://github.com/SeanGSR/omarchy-satellite-radar.git --enable
 ```
 
-The plugin is placed in the right section of the bar by default. It requires
-the standard Omarchy environment plus `node`, `curl`, and `jq`. The small
-`satellite.js` runtime is included with its MIT license, so no dependency
-setup step is required.
+Requires `node`, `curl`, and `jq`. `satellite.js` is included.
 
-## Usage
+## Controls
 
-Click the satellite icon in the bar to open the map. Drag to pan and use the
-wheel or `+`/`−` controls to zoom. Click a satellite on the map, in the list,
-or on the mini globe to focus it. Any subsequent drag or wheel input returns
-the camera to manual control.
+- Drag to pan; scroll or use `+` / `−` to zoom
+- Click a satellite to track it
+- Use the toolbar for search, performance mode, globe, list, and keyboard help
+- Global mode shows the full supported catalog with Starlink hidden by default
 
-The performance button offers:
+Keyboard shortcuts:
 
-- **Balanced:** up to 60 satellites
-- **High:** up to 150 satellites
-- **Maximum:** up to 300 satellites
-- **Global:** every object in the supported catalogs; Starlink is hidden by
-  default in this mode to reduce visual clutter
+- `↑` / `↓` or `J` / `K`: select satellite
+- `Enter` / `Space`: track selection
+- `←` / `→`: pan map
+- `+` / `−`: zoom
+- `S` or `/`: search
+- `I`: satellite list
+- `G`: mini globe
+- `P`: performance menu
+- `R`: refresh now
+- `C` or `0`: recenter
+- `1`–`4`: toggle satellite categories
+- `?`: keyboard help
+- `Escape`: close the active layer or panel
 
-Global mode is intended for powerful computers and refreshes the full catalog
-no more often than every 30 seconds.
-
-## Keyboard navigation
-
-- `↑` / `↓` or `K` / `J`: open and navigate the satellite list
-- `←` / `→`: pan the map west or east
-- `Enter` or `Space`: track the selected satellite
-- `+` / `−`: zoom the map
-- `S` or `/`: open location search
-- `I`: toggle the satellite list
-- `G`: toggle the mini globe
-- `P`: open the performance menu; use `↑` / `↓` and `Enter`
-- `R`: refresh satellite data
-- `?`: show or hide the keyboard shortcut legend
-- `C` or `0`: return to the radar location
-- `1`–`4`: toggle Starlink, navigation satellites, stations, and other objects
-- `Escape`: leave the active keyboard layer, then close the panel
-
-## Configuration
-
-Settings are available through Omarchy's bar configuration. For example:
+## Configure
 
 ```sh
 omarchy bar set ldng.satellite-radar minimumElevation 10
 omarchy bar set ldng.satellite-radar performanceMode High
 ```
 
-Manual locations are stored through `omarchy-weather-location`, so Weather and
-Satellite Radar use the same selected place. Double-clicking the map updates
-that shared location.
+## Network and privacy
 
-## Network access and privacy
+- CelesTrak: orbital elements
+- CARTO/OpenStreetMap: map tiles
+- Open-Meteo: city search
+- GeoJS: fallback IP-based location
 
-The plugin runs without elevated privileges. It contacts:
+TLE data is cached in `~/.cache/omarchy-satellite-radar` for two hours. Failed
+requests back off for 15 minutes. Set a location manually to avoid the GeoJS
+fallback.
 
-- [CelesTrak](https://celestrak.org/) for public TLE orbital elements
-- [CARTO](https://carto.com/) for map tiles using OpenStreetMap data
-- [Open-Meteo](https://open-meteo.com/) for city autocomplete
-- [GeoJS](https://www.geojs.io/) only as a fallback for approximate IP location
-
-TLE files are cached under `${XDG_CACHE_HOME:-~/.cache}/omarchy-satellite-radar`.
-The fallback IP lookup necessarily reveals the public IP address to GeoJS.
-Users can avoid it by setting a location through Omarchy Weather or the search
-field before the fallback is needed.
-
-Satellite positions are predictions derived from TLE snapshots, not live GPS
-telemetry. This plugin is for casual visualization and is not suitable for
-navigation or collision avoidance.
-
-## Data refresh policy
-
-Position propagation is performed locally. CelesTrak data is downloaded no
-more than once every two hours per catalog group. Failed requests back off for
-15 minutes and use stale cached data when available.
+Positions are predictions from TLE data, not live GPS telemetry. Do not use
+this plugin for navigation or collision avoidance.
 
 ## Remove
 
@@ -105,13 +72,9 @@ more than once every two hours per catalog group. Failed requests back off for
 omarchy plugin remove ldng.satellite-radar
 ```
 
-Removal does not delete the optional TLE cache. It can be removed separately
-from `~/.cache/omarchy-satellite-radar` if desired.
-
 ## License
 
-Satellite Radar is licensed under the [MIT License](LICENSE). The vendored
-`satellite.js` runtime is also MIT-licensed; its notice is included at
+[MIT](LICENSE). The included `satellite.js` license is in
 [`vendor/SATELLITE_JS_LICENSE.md`](vendor/SATELLITE_JS_LICENSE.md).
 
 Map data © OpenStreetMap contributors. Map tiles © CARTO.
