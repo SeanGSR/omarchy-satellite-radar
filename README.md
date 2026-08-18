@@ -57,6 +57,7 @@ no more often than every 30 seconds.
 - `G`: toggle the mini globe
 - `P`: open the performance menu; use `↑` / `↓` and `Enter`
 - `R`: refresh satellite data
+- `?`: show or hide the keyboard shortcut legend
 - `C` or `0`: return to the radar location
 - `1`–`4`: toggle Starlink, navigation satellites, stations, and other objects
 - `Escape`: leave the active keyboard layer, then close the panel

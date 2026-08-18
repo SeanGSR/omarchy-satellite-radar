@@ -45,6 +45,7 @@ Panel {
   property bool searchTrayOpen: false
   property bool miniGlobeOpen: false
   property bool performanceMenuOpen: false
+  property bool keyboardLegendOpen: true
   property bool keyboardCursorActive: false
   property int keyboardContactIndex: 0
   property int keyboardPerformanceIndex: 0
@@ -251,6 +252,7 @@ Panel {
       mapZoom = Math.max(2, Math.round(mapZoom) - 1)
       scope.requestPaint()
     } else if (key === "r") refresh()
+    else if (key === "?") keyboardLegendOpen = !keyboardLegendOpen
     else if (key === "s" || key === "/") toggleSearchTray()
     else if (key === "i") {
       infoTrayOpen = !infoTrayOpen
@@ -787,6 +789,24 @@ Panel {
           }
 
           Button {
+            id: keyboardLegendButton
+            anchors.right: performanceButton.left
+            anchors.rightMargin: root.controlGap
+            anchors.verticalCenter: parent.verticalCenter
+            width: root.hudButtonSize
+            height: root.hudButtonSize
+            iconText: ""
+            iconSize: Style.font.icon * root.textScale
+            tooltipText: root.keyboardLegendOpen ? "Hide keyboard shortcuts" : "Show keyboard shortcuts"
+            foreground: root.keyboardLegendOpen ? Color.accent : root.foreground
+            background: root.hudButtonBackground
+            accent: Color.accent
+            selected: root.keyboardLegendOpen
+            bordered: true
+            onClicked: root.keyboardLegendOpen = !root.keyboardLegendOpen
+          }
+
+          Button {
             id: performanceButton
             anchors.right: miniGlobeButton.left
             anchors.rightMargin: root.controlGap
@@ -903,7 +923,7 @@ Panel {
           parent: radarBody
           x: mapToolbar.x + searchTrayButton.x + searchTrayButton.width + root.controlGap
           y: mapToolbar.y
-          width: Math.max(0, mapToolbar.x + performanceButton.x - x - root.controlGap)
+          width: Math.max(0, mapToolbar.x + keyboardLegendButton.x - x - root.controlGap)
           height: root.searchTrayOpen ? searchContent.implicitHeight : 0
           opacity: root.searchTrayOpen ? 1 : 0
           z: 40
@@ -1459,8 +1479,8 @@ Panel {
               width: Math.max(0, rightEdge - leftEdge)
               anchors.bottom: parent.bottom
               anchors.bottomMargin: root.hudInset
-              height: keyboardLegendText.implicitHeight + Style.space(8)
-              visible: width >= Style.space(220)
+              height: keyboardLegendText.implicitHeight + Style.space(12)
+              visible: root.keyboardLegendOpen && width >= Style.space(220)
               z: 14
               radius: Style.cornerRadius
               color: Qt.rgba(Color.background.r, Color.background.g, Color.background.b, 0.68)
@@ -1470,12 +1490,12 @@ Panel {
               Text {
                 id: keyboardLegendText
                 anchors.centerIn: parent
-                width: parent.width - Style.space(10)
+                width: parent.width - Style.space(14)
                 text: "↑↓ Select  ·  Enter Track  ·  ←→ Pan  ·  +− Zoom  ·  S Search\n"
-                  + "I List  ·  G Globe  ·  P Mode  ·  R Refresh now  ·  C Home  ·  Esc Close"
-                color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.72)
+                  + "I List  ·  G Globe  ·  P Mode  ·  R Refresh now  ·  C Home  ·  ? Help  ·  Esc Close"
+                color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.84)
                 font.family: root.fontFamily
-                font.pixelSize: Style.font.caption * 0.78 * root.textScale
+                font.pixelSize: Style.font.bodySmall * 0.9 * root.textScale
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.Wrap
               }
