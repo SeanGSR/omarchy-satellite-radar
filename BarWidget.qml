@@ -52,6 +52,7 @@ BarWidget {
     anchors.fill: parent
     bar: root.bar
     active: root.opened
+    useActiveColor: false
     text: "󰑱"
     tooltipText: "Satellite Radar"
     onPressed: root.togglePanel()
