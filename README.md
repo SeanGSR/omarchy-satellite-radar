@@ -40,7 +40,7 @@ Keyboard shortcuts:
 - `G`: mini globe
 - `P`: performance menu
 - `R`: refresh now
-- `C` or `0`: recenter
+- `C` or `0`: recenter and zoom in on home
 - `1`–`4`: toggle satellite categories
 - `?`: keyboard help
 - `Escape`: close the active layer or panel

@@ -262,7 +262,7 @@ Panel {
     else if (key === "p") {
       performanceMenuOpen = !performanceMenuOpen
       keyboardPerformanceIndex = ["Balanced", "High", "Maximum", "Global"].indexOf(performanceMode)
-    } else if (key === "c" || key === "0") recenterMap()
+    } else if (key === "c" || key === "0") focusHome()
     else if (key === "1") toggleCategory("starlink")
     else if (key === "2") toggleCategory("navigation")
     else if (key === "3") toggleCategory("station")
@@ -317,6 +317,11 @@ Panel {
     viewLat = centreLat
     viewLon = centreLon
     mapPanned = false
+  }
+  function focusHome() {
+    recenterMap()
+    animateMapFocus()
+    scope.requestPaint()
   }
   function cancelMapFocus() { mapZoomFocus.stop() }
   function animateMapFocus() {
@@ -762,12 +767,12 @@ Panel {
             height: root.hudButtonSize
             iconText: "󰋜"
             iconSize: Style.font.icon * root.textScale
-            tooltipText: "Return to radar location"
+            tooltipText: "Return to radar location and zoom in"
             foreground: root.homeColor
             background: root.hudButtonBackground
             accent: Color.accent
             bordered: true
-            onClicked: { root.recenterMap(); scope.requestPaint() }
+            onClicked: root.focusHome()
           }
 
           Button {
