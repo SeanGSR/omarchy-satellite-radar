@@ -15,6 +15,7 @@ satellites without opening an external website.
 - Draggable mini globe with altitude visualization and independent zoom
 - Balanced (60), High (150), Maximum (300), and opt-in Global catalog modes
 - Two-hour TLE cache and request backoff that respect the upstream data service
+- Full keyboard navigation
 
 ## Install
 
@@ -44,6 +45,21 @@ The performance button offers:
 
 Global mode is intended for powerful computers and refreshes the full catalog
 no more often than every 30 seconds.
+
+## Keyboard navigation
+
+- `↑` / `↓` or `K` / `J`: open and navigate the satellite list
+- `←` / `→`: pan the map west or east
+- `Enter` or `Space`: track the selected satellite
+- `+` / `−`: zoom the map
+- `S` or `/`: open location search
+- `I`: toggle the satellite list
+- `G`: toggle the mini globe
+- `P`: open the performance menu; use `↑` / `↓` and `Enter`
+- `R`: refresh satellite data
+- `C` or `0`: return to the radar location
+- `1`–`4`: toggle Starlink, navigation satellites, stations, and other objects
+- `Escape`: leave the active keyboard layer, then close the panel
 
 ## Configuration
 

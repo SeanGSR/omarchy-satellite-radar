@@ -45,6 +45,9 @@ Panel {
   property bool searchTrayOpen: false
   property bool miniGlobeOpen: false
   property bool performanceMenuOpen: false
+  property bool keyboardCursorActive: false
+  property int keyboardContactIndex: 0
+  property int keyboardPerformanceIndex: 0
   property bool starlinkBeforeGlobal: true
   property bool resolvingManualLocation: false
   property var locationSuggestions: []
@@ -158,8 +161,110 @@ Panel {
       if (Number(contact.noradId) === root.trackedNoradId) trackedStillVisible = true
     }
     if (!trackedStillVisible) root.trackedNoradId = -1
+    ensureKeyboardCursor()
     scope.requestPaint()
     miniGlobe.requestPaint()
+  }
+  function ensureKeyboardCursor() {
+    if (filteredContacts.count === 0) {
+      keyboardContactIndex = 0
+      keyboardCursorActive = false
+      return
+    }
+    if (trackedNoradId >= 0) {
+      for (var i = 0; i < filteredContacts.count; ++i) {
+        if (Number(filteredContacts.get(i).noradId) === trackedNoradId) {
+          keyboardContactIndex = i
+          return
+        }
+      }
+    }
+    keyboardContactIndex = Math.max(0, Math.min(keyboardContactIndex, filteredContacts.count - 1))
+  }
+  function selectKeyboardContact(delta) {
+    if (filteredContacts.count === 0) return
+    infoTrayOpen = true
+    if (!keyboardCursorActive) {
+      keyboardCursorActive = true
+      ensureKeyboardCursor()
+    } else {
+      keyboardContactIndex = Math.max(0, Math.min(
+        keyboardContactIndex + delta, filteredContacts.count - 1))
+    }
+    Qt.callLater(function() {
+      satelliteList.positionViewAtIndex(keyboardContactIndex, ListView.Contain)
+    })
+  }
+  function activateKeyboardSelection() {
+    if (performanceMenuOpen) {
+      var modes = ["Balanced", "High", "Maximum", "Global"]
+      setPerformanceMode(modes[keyboardPerformanceIndex])
+      return
+    }
+    if (!keyboardCursorActive || filteredContacts.count === 0) {
+      refresh()
+      return
+    }
+    trackSatellite(filteredContacts.get(keyboardContactIndex).noradId)
+    satelliteList.positionViewAtIndex(keyboardContactIndex, ListView.Contain)
+  }
+  function panMap(dx, dy) {
+    cancelMapFocus()
+    trackedNoradId = -1
+    var step = 18 / Math.pow(2, Math.max(0, mapZoom - 2))
+    viewLat = Math.max(-75, Math.min(75, viewLat - dy * step))
+    viewLon = ((viewLon + dx * step + 180) % 360 + 360) % 360 - 180
+    mapPanned = true
+    scope.requestPaint()
+  }
+  function moveKeyboardCursor(dx, dy) {
+    if (performanceMenuOpen) {
+      if (dy !== 0)
+        keyboardPerformanceIndex = Math.max(0, Math.min(3, keyboardPerformanceIndex + dy))
+      return
+    }
+    if (dy !== 0) selectKeyboardContact(dy)
+    else if (dx !== 0) panMap(dx, 0)
+  }
+  function closeKeyboardLayer() {
+    if (performanceMenuOpen) {
+      performanceMenuOpen = false
+    } else if (searchTrayOpen) {
+      searchTrayOpen = false
+      locationSuggestions = []
+    } else if (keyboardCursorActive) {
+      keyboardCursorActive = false
+    } else if (infoTrayOpen) {
+      infoTrayOpen = false
+    } else {
+      close()
+    }
+  }
+  function handleKeyboardShortcut(text) {
+    var key = String(text || "").toLowerCase()
+    if (key === "+" || key === "=") {
+      cancelMapFocus()
+      mapZoom = Math.min(maxMapZoom, Math.round(mapZoom) + 1)
+      scope.requestPaint()
+    } else if (key === "-") {
+      cancelMapFocus()
+      mapZoom = Math.max(2, Math.round(mapZoom) - 1)
+      scope.requestPaint()
+    } else if (key === "r") refresh()
+    else if (key === "s" || key === "/") toggleSearchTray()
+    else if (key === "i") {
+      infoTrayOpen = !infoTrayOpen
+      keyboardCursorActive = infoTrayOpen && filteredContacts.count > 0
+      if (keyboardCursorActive) ensureKeyboardCursor()
+    } else if (key === "g") miniGlobeOpen = !miniGlobeOpen
+    else if (key === "p") {
+      performanceMenuOpen = !performanceMenuOpen
+      keyboardPerformanceIndex = ["Balanced", "High", "Maximum", "Global"].indexOf(performanceMode)
+    } else if (key === "c" || key === "0") recenterMap()
+    else if (key === "1") toggleCategory("starlink")
+    else if (key === "2") toggleCategory("navigation")
+    else if (key === "3") toggleCategory("station")
+    else if (key === "4") toggleCategory("other")
   }
   function toggleCategory(category) {
     switch (String(category)) {
@@ -192,7 +297,11 @@ Panel {
   }
   readonly property string basemapStyle: darkTheme ? "dark_all" : "light_all"
 
-  function open() { root.controller.show(); if (contacts.count === 0) refresh() }
+  function open() {
+    keyboardCursorActive = false
+    root.controller.show()
+    if (contacts.count === 0) refresh()
+  }
   function close() { root.controller.hide() }
   function toggle() { root.opened ? root.close() : root.open() }
   function switchPanel(direction) {
@@ -618,20 +727,12 @@ Panel {
     PanelKeyCatcher {
       id: keyCatcher
       anchors.fill: parent
-      onCloseRequested: root.close()
+      blocked: manualLocationField.activeFocus
+      onMoveRequested: function(dx, dy) { root.moveKeyboardCursor(dx, dy) }
+      onCloseRequested: root.closeKeyboardLayer()
       onTabRequested: function(direction) { root.switchPanel(direction) }
-      onActivateRequested: root.refresh()
-      Keys.onPressed: function(event) {
-        if (event.key === Qt.Key_Plus || event.key === Qt.Key_Equal) {
-          root.cancelMapFocus()
-          root.mapZoom = Math.min(root.maxMapZoom, Math.round(root.mapZoom) + 1)
-          event.accepted = true
-        } else if (event.key === Qt.Key_Minus) {
-          root.cancelMapFocus()
-          root.mapZoom = Math.max(2, Math.round(root.mapZoom) - 1)
-          event.accepted = true
-        }
-      }
+      onActivateRequested: root.activateKeyboardSelection()
+      onTextKey: function(text) { root.handleKeyboardShortcut(text) }
 
       Column {
         id: contentColumn
@@ -702,7 +803,10 @@ Panel {
             accent: Color.accent
             selected: root.performanceMenuOpen
             bordered: true
-            onClicked: root.performanceMenuOpen = !root.performanceMenuOpen
+            onClicked: {
+              root.performanceMenuOpen = !root.performanceMenuOpen
+              root.keyboardPerformanceIndex = ["Balanced", "High", "Maximum", "Global"].indexOf(root.performanceMode)
+            }
           }
 
           Button {
@@ -772,6 +876,7 @@ Panel {
               model: ["Balanced", "High", "Maximum", "Global"]
               delegate: Button {
                 required property var modelData
+                required property int index
                 width: performanceMenuContent.width
                 height: root.hudButtonSize
                 text: String(modelData) + "  ·  "
@@ -783,7 +888,9 @@ Panel {
                 foreground: root.performanceColorFor(String(modelData))
                 background: root.hudButtonBackground
                 accent: Color.accent
-                selected: root.performanceMode === String(modelData)
+                selected: root.performanceMenuOpen
+                  ? index === root.keyboardPerformanceIndex
+                  : root.performanceMode === String(modelData)
                 bordered: true
                 onClicked: root.setPerformanceMode(String(modelData))
               }
@@ -843,7 +950,12 @@ Panel {
                 root.suggestionIndex = Math.max(0, root.suggestionIndex - 1)
                 event.accepted = true
               } else if (event.key === Qt.Key_Escape) {
-                root.locationSuggestions = []
+                if (root.locationSuggestions.length > 0) {
+                  root.locationSuggestions = []
+                } else {
+                  root.searchTrayOpen = false
+                  keyCatcher.forceActiveFocus()
+                }
                 event.accepted = true
               } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                 if (root.locationSuggestions.length > 0)
@@ -1414,6 +1526,7 @@ Panel {
             }
           }
           delegate: Rectangle {
+            required property int index
             required property int noradId
             required property string name
             required property string category
@@ -1422,7 +1535,10 @@ Panel {
             radius: Style.cornerRadius
             color: noradId === root.trackedNoradId
               ? Style.selectionFillFor(root.foreground, root.satelliteColor(category))
+              : (root.keyboardCursorActive && index === root.keyboardContactIndex
+                ? Style.hoverFillFor(root.foreground, Color.accent)
               : (rowMouse.containsMouse ? Style.hoverFillFor(root.foreground, Color.accent) : "transparent")
+                )
 
             Text {
               id: satelliteName
@@ -1444,7 +1560,11 @@ Panel {
               anchors.fill: parent
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
-              onClicked: root.trackSatellite(noradId)
+              onClicked: {
+                root.keyboardContactIndex = index
+                root.keyboardCursorActive = true
+                root.trackSatellite(noradId)
+              }
           }
         }
         }
