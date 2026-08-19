@@ -13,6 +13,7 @@ globe.
 - Draggable and zoomable map and mini globe
 - Balanced (60), High (150), Maximum (300), and Global modes
 - Mouse and keyboard controls
+- Visible loading and retry state when automatic location is unavailable
 
 ## Install
 

@@ -507,7 +507,8 @@ Panel {
     } catch (error) {}
   }
   function resolveLocation() {
-    if (usingWeatherLocation) return
+    if (usingWeatherLocation || locateProcess.running) return
+    errorText = ""
     locateProcess.command = [Qt.resolvedUrl("locate").toString().replace("file://", "")]
     locateProcess.running = true
   }
@@ -668,6 +669,10 @@ Panel {
           root.refresh()
         } catch (error) { root.errorText = "Could not determine your location" }
       }
+    }
+    onExited: function(exitCode) {
+      if (exitCode !== 0 && root.errorText === "")
+        root.errorText = "Could not determine your location"
     }
   }
 
@@ -1064,6 +1069,45 @@ Panel {
             }
           }
         }
+        }
+
+        Item {
+          id: locationPlaceholder
+          visible: !Number.isFinite(root.viewLat) || !Number.isFinite(root.viewLon)
+          anchors.horizontalCenter: parent.horizontalCenter
+          width: parent.width + panel.padding * 2
+          height: Math.round(width * 0.68) + Style.space(38) + panel.padding * 2
+          transform: Translate { y: -panel.padding }
+
+          Column {
+            anchors.centerIn: parent
+            width: Math.min(parent.width - Style.space(40), Style.space(420))
+            spacing: Style.space(12)
+
+            Text {
+              width: parent.width
+              text: root.errorText !== "" ? root.errorText : "Locating radar position…"
+              color: root.errorText !== "" ? Color.urgent : root.foreground
+              font.family: root.fontFamily
+              font.pixelSize: Style.font.body * root.textScale
+              horizontalAlignment: Text.AlignHCenter
+              wrapMode: Text.WordWrap
+            }
+
+            Button {
+              visible: root.errorText !== ""
+              anchors.horizontalCenter: parent.horizontalCenter
+              width: Style.space(120)
+              height: root.hudButtonSize
+              text: "Retry"
+              foreground: root.foreground
+              background: root.hudButtonBackground
+              accent: Color.accent
+              bordered: true
+              enabled: !locateProcess.running
+              onClicked: root.resolveLocation()
+            }
+          }
         }
 
         Item {
