@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 import qs.Commons
@@ -1117,6 +1118,14 @@ Panel {
           width: parent.width + panel.padding * 2
           height: Math.round(width * 0.68) + Style.space(38) + panel.padding * 2
           transform: Translate { y: -panel.padding }
+          layer.enabled: true
+          layer.smooth: true
+          layer.effect: MultiEffect {
+            maskEnabled: true
+            maskSource: radarBodyMask
+            maskThresholdMin: 0.5
+            maskSpreadAtMin: 1.0
+          }
 
         Item {
           id: radarMap
@@ -1549,6 +1558,16 @@ Panel {
             }
 
           }
+        }
+
+        Rectangle {
+          id: radarBodyMask
+          anchors.fill: radarBody
+          radius: Style.cornerRadius
+          color: "black"
+          visible: false
+          layer.enabled: true
+          layer.smooth: true
         }
 
         Rectangle {
